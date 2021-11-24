@@ -2,11 +2,12 @@ from __future__ import annotations
 from typing import Iterable, Sequence
 
 
-class Sudoku:
+class Sudoku():
     """A mutable sudoku puzzle."""
 
     def __init__(self, puzzle: Iterable[Iterable]):
         self._grid: list[str] = []
+        self._values = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
         for puzzle_row in puzzle:
             row = ""
@@ -37,20 +38,15 @@ class Sudoku:
 
     def value_at(self, x: int, y: int) -> int:
         """Returns the value at x,y."""
-        value = -1
-
-        for i in range(9):
-            for j in range(9):
-                if i == x and j == y:
-                    row = self._grid[y]
-                    value = int(row[x])
+        row = self._grid[y]
+        value = int(row[x])
 
         return value
 
     def options_at(self, x: int, y: int) -> Iterable[int]:
         """Returns all possible values (options) at x,y."""
-        options = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
+        options = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+        
         # Remove all values from the row
         for value in self.row_values(y):
             if value in options:
@@ -76,30 +72,23 @@ class Sudoku:
         Returns the next index (x,y) that is empty (value 0).
         If there is no empty spot, returns (-1,-1)
         """
-        next_x, next_y = -1, -1
-
         for y in range(9):
             for x in range(9):
-                if self.value_at(x, y) == 0 and next_x == -1 and next_y == -1:
-                    next_x, next_y = x, y
-
-        return next_x, next_y
+                if self.value_at(x, y) == 0:
+                    return x, y
+        
+        x, y = -1, -1
+        return x, y
 
     def row_values(self, i: int) -> Iterable[int]:
         """Returns all values at i-th row."""
-        values = []
-
-        for j in range(9):
-            values.append(self.value_at(j, i))
+        values = [self.value_at(j, i) for j in range(9)]
 
         return values
 
     def column_values(self, i: int) -> Iterable[int]:
         """Returns all values at i-th column."""
-        values = []
-
-        for j in range(9):
-            values.append(self.value_at(i, j))
+        values = [self.value_at(i, j) for j in range(9)]
 
         return values
 
@@ -127,22 +116,12 @@ class Sudoku:
         Returns True if and only if all rows, columns and blocks contain
         only the numbers 1 through 9. False otherwise.
         """
-        values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-        result = True
-
         for i in range(9):
-            for value in values:
-                if value not in self.column_values(i):
-                    result = False
+            for value in self._values:
+                if value not in self.column_values(i) or value not in self.row_values(i) or value not in self.block_values(i):
+                    return False
 
-                if value not in self.row_values(i):
-                    result = False
-
-                if value not in self.block_values(i):
-                    result = False
-
-        return result
+        return True
 
     def __str__(self) -> str:
         representation = ""
